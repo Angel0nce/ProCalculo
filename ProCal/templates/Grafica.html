@@ -1,36 +1,75 @@
 {% extends "Base.html" %}
-
-{% block title %}
-Graficador - Calculadora Científica
-{% endblock %}
+{% block title %}Graficador - Calculadora Científica{% endblock %}
 
 {% block body %}
 <div class="container mt-5">
     <h1 class="mb-4 text-center">Graficador de Coordenadas</h1>
 
-    <form id="coordenadasForm" action="/graficar" method="POST">
-        {% for i in range(num_pares) %}
-        <div class="row mb-3">
-            <div class="col-md-5">
-                <input type="number" step="any" name="x{{ i }}" class="form-control" placeholder="X{{ i + 1 }}" value="{{ coordenadas[i][0] if coordenadas and i < coordenadas|length else '' }}" required>
-            </div>
-            <div class="col-md-5">
-                <input type="number" step="any" name="y{{ i }}" class="form-control" placeholder="Y{{ i + 1 }}" value="{{ coordenadas[i][1] if coordenadas and i < coordenadas|length else '' }}" required>
+    <form id="coordenadasForm">
+        <div id="campos">
+            <div class="row mb-3">
+                <div class="col-md-5">
+                    <input type="number" step="any" name="x" class="form-control" placeholder="X1" required>
+                </div>
+                <div class="col-md-5">
+                    <input type="number" step="any" name="y" class="form-control" placeholder="Y1" required>
+                </div>
             </div>
         </div>
-        {% endfor %}
 
         <div class="d-flex justify-content-between">
-            <button type="submit" name="action" value="graficar" class="btn btn-primary">Graficar</button>
-            <button type="submit" name="action" value="agregar" class="btn btn-secondary">Agregar más coordenadas</button>
+            <button type="button" onclick="agregarCampo()" class="btn btn-secondary">Agregar más coordenadas</button>
+            <button type="submit" class="btn btn-primary">Graficar</button>
         </div>
     </form>
 
-    {% if imagen %}
-    <div class="mt-5 text-center">
+    <div class="mt-5 text-center" id="resultado" style="display: none;">
         <h4>Resultado:</h4>
-        <img src="data:image/png;base64,{{ imagen }}" class="img-fluid" alt="Gráfica generada">
+        <img id="grafica" class="img-fluid" alt="Gráfica generada">
     </div>
-    {% endif %}
 </div>
+
+<script>
+function agregarCampo() {
+    const index = document.querySelectorAll('#campos .row').length + 1;
+    const nuevoCampo = `
+        <div class="row mb-3">
+            <div class="col-md-5">
+                <input type="number" step="any" name="x" class="form-control" placeholder="X${index}" required>
+            </div>
+            <div class="col-md-5">
+                <input type="number" step="any" name="y" class="form-control" placeholder="Y${index}" required>
+            </div>
+        </div>`;
+    document.getElementById("campos").insertAdjacentHTML('beforeend', nuevoCampo);
+}
+
+document.getElementById("coordenadasForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const xs = Array.from(document.querySelectorAll('input[name="x"]')).map(input => input.value);
+    const ys = Array.from(document.querySelectorAll('input[name="y"]')).map(input => input.value);
+
+    fetch("/graficar", {
+        method: "POST",
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ x: xs, y: ys })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert("Error: " + data.error);
+        } else {
+            document.getElementById("resultado").style.display = "block";
+            document.getElementById("grafica").src = data.image;
+        }
+    })
+    .catch(err => {
+        alert("Fallo al graficar");
+        console.error(err);
+    });
+});
+</script>
 {% endblock %}

@@ -1,53 +1,84 @@
 {% extends "base.html" %}
-
 {% block title %}Calculadora Científica{% endblock %}
 
 {% block body %}
 <div class="container mt-5">
-    <h2 class="text-center mb-4">Calculadora Científica</h2>
+    <h2 class="text-center">Calculadora Científica</h2>
     <div class="card p-4 mx-auto shadow" style="max-width: 400px;">
-        <form method="post">
-            <input type="text" name="expression" value="{{ expression or '' }}" class="form-control mb-3 text-end fs-4" readonly>
+        <input type="text" id="pantalla" class="form-control mb-3 text-end fs-4" readonly>
 
-            {% if result is defined %}
-                <div class="alert alert-info text-center">Resultado: {{ result }}</div>
-            {% elif error %}
-                <div class="alert alert-danger text-center">Error: {{ error }}</div>
-            {% endif %}
+        <div class="alert alert-info d-none text-center" id="resultadoBox">Resultado: <span id="resultado"></span></div>
 
-            <div class="d-grid gap-2 mb-2">
-                <button name="btn" value="DEG" class="btn btn-secondary">Modo: {{ mode }}</button>
-            </div>
+        <div class="d-grid mb-2">
+            <button id="modoBtn" class="btn btn-secondary">Modo: <span id="modoTexto">DEG</span></button>
+        </div>
 
-            <div class="row g-2">
-                {% set buttons = [
-                    ['AC', '(', ')', '⌫'],
-                    ['sin(', 'cos(', 'tan(', '√('],
-                    ['asin(', 'acos(', 'atan(', 'log('],
-                    ['ln(', 'exp(', 'fact(', '/'],
-                    ['7', '8', '9', '*'],
-                    ['4', '5', '6', '-'],
-                    ['1', '2', '3', '+'],
-                    ['0', '.', '^', '=']
-                ] %}
-
-                {% for row in buttons %}
-                    {% for btn in row %}
-                        <div class="col-3">
-                            <button type="submit" name="btn" value="{{ btn }}" class="btn
-                                {% if btn in ['AC', '(', ')', '⌫'] %}btn-dark
-                                {% elif btn in ['+', '-', '*', '/', '^'] %}btn-warning
-                                {% elif btn == '=' %}btn-success
-                                {% elif btn in ['sin(', 'cos(', 'tan(', '√(', 'asin(', 'acos(', 'atan(', 'log(', 'ln(', 'exp(', 'fact('] %}btn-secondary
-                                {% else %}btn-light{% endif %}
-                                w-100">
-                                {{ '÷' if btn == '/' else '×' if btn == '*' else '−' if btn == '-' else btn }}
-                            </button>
-                        </div>
-                    {% endfor %}
+        <div class="row g-2">
+            {% set botones = [
+                ['AC', '(', ')', '⌫'],
+                ['sin(', 'cos(', 'tan(', 'sqrt('],
+                ['asin(', 'acos(', 'atan(', 'log('],
+                ['ln(', 'exp(', 'fact(', '/'],
+                ['7', '8', '9', '*'],
+                ['4', '5', '6', '-'],
+                ['1', '2', '3', '+'],
+                ['0', '.', '^', '=']
+            ] %}
+            {% for fila in botones %}
+                {% for b in fila %}
+                    <div class="col-3">
+                        <button type="button" class="btn w-100
+                            {% if b == '=' %}btn-success
+                            {% elif b in ['+', '-', '*', '/', '^'] %}btn-warning
+                            {% elif b in ['AC', '⌫'] %}btn-dark
+                            {% elif '(' in b %}btn-secondary
+                            {% else %}btn-light{% endif %}"
+                            onclick="presionarBoton('{{ b }}')">
+                            {{ b }}
+                        </button>
+                    </div>
                 {% endfor %}
-            </div>
-        </form>
+            {% endfor %}
+        </div>
     </div>
 </div>
+
+<script>
+    let expresion = '';
+    let modo = 'DEG';
+
+    function presionarBoton(boton) {
+        const pantalla = document.getElementById('pantalla');
+        const resultadoBox = document.getElementById('resultadoBox');
+        const resultadoSpan = document.getElementById('resultado');
+
+        if (boton === 'AC') {
+            expresion = '';
+            resultadoBox.classList.add('d-none');
+        } else if (boton === '⌫') {
+            expresion = expresion.slice(0, -1);
+        } else if (boton === '=') {
+            fetch('/api/calcular', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ expresion: expresion, modo: modo })
+            })
+            .then(res => res.json())
+            .then(data => {
+                resultadoSpan.textContent = data.resultado;
+                resultadoBox.classList.remove('d-none');
+            });
+        } else {
+            expresion += boton;
+        }
+
+        pantalla.value = expresion;
+    }
+
+    document.getElementById('modoBtn').addEventListener('click', () => {
+        modo = (modo === 'DEG') ? 'RAD' : 'DEG';
+        document.getElementById('modoTexto').textContent = modo;
+    });
+    
+</script>
 {% endblock %}

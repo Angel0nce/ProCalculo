@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Derivadas - Calculadora Científica{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h1 class="mb-4">Calculadora de Derivadas</h1>
+
+    {% if error %}
+        <div class="alert alert-danger" role="alert">
+            {{ error }}
+        </div>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('Derivadas.derivadas') }}">
+        <div class="mb-3">
+            <label for="funcion" class="form-label">Función (variable x):</label>
+            <input type="text" class="form-control" id="funcion" name="funcion" placeholder="Ejemplo: x^3 + 2*x^2 - 2*x - 2" required>
+        </div>
+
+        <div class="row mb-3">
+            <div class="col">
+                <label for="a" class="form-label">Valor a (solo para Rolle y Valor Medio):</label>
+                <input type="text" class="form-control" id="a" name="a" placeholder="Ejemplo: 0">
+            </div>
+            <div class="col">
+                <label for="b" class="form-label">Valor b (solo para Rolle y Valor Medio):</label>
+                <input type="text" class="form-control" id="b" name="b" placeholder="Ejemplo: 2">
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label for="metodo" class="form-label">Seleccione método:</label>
+            <select class="form-select" id="metodo" name="metodo" required>
+                <option value="rolle">Teorema de Rolle</option>
+                <option value="valor_medio">Teorema del Valor Medio</option>
+                <option value="max_min">Máximos y Mínimos</option>
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Calcular</button>
+    </form>
+
+    {% if resultados %}
+        <h2 class="mt-5">Resultados:</h2>
+        <ul class="list-group">
+            {% for res in resultados %}
+                <li class="list-group-item">
+                    {% if res.error %}
+                        <span class="text-danger"><i class="bi bi-exclamation-triangle-fill"></i> Error: {{ res.error }}</span>
+                    {% elif res.info %}
+                        <span><i class="bi bi-info-circle-fill"></i> {{ res.info }}</span>
+                    {% elif res.c is defined %}
+                        <span><i class="bi bi-geo-alt-fill"></i> Punto c = {{ res.c }}, f'(c) = {{ res.f_prime_c }}</span>
+                    {% elif res.punto is defined %}
+                        <span><i class="bi bi-flag-fill"></i> Punto crítico = {{ res.punto }}, Tipo: {{ res.tipo }}, f(punto) = {{ res['f(punto)'] }}</span>
+                    {% elif res.pendiente_media is defined %}
+                        <span><i class="bi bi-bar-chart-fill"></i> Pendiente media = {{ res.pendiente_media }}</span>
+                    {% else %}
+                        {{ res }}
+                    {% endif %}
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+</div>
+{% endblock %}
