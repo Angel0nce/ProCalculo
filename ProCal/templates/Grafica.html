@@ -1,0 +1,36 @@
+{% extends "Base.html" %}
+
+{% block title %}
+Graficador - Calculadora Científica
+{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <h1 class="mb-4 text-center">Graficador de Coordenadas</h1>
+
+    <form id="coordenadasForm" action="/graficar" method="POST">
+        {% for i in range(num_pares) %}
+        <div class="row mb-3">
+            <div class="col-md-5">
+                <input type="number" step="any" name="x{{ i }}" class="form-control" placeholder="X{{ i + 1 }}" value="{{ coordenadas[i][0] if coordenadas and i < coordenadas|length else '' }}" required>
+            </div>
+            <div class="col-md-5">
+                <input type="number" step="any" name="y{{ i }}" class="form-control" placeholder="Y{{ i + 1 }}" value="{{ coordenadas[i][1] if coordenadas and i < coordenadas|length else '' }}" required>
+            </div>
+        </div>
+        {% endfor %}
+
+        <div class="d-flex justify-content-between">
+            <button type="submit" name="action" value="graficar" class="btn btn-primary">Graficar</button>
+            <button type="submit" name="action" value="agregar" class="btn btn-secondary">Agregar más coordenadas</button>
+        </div>
+    </form>
+
+    {% if imagen %}
+    <div class="mt-5 text-center">
+        <h4>Resultado:</h4>
+        <img src="data:image/png;base64,{{ imagen }}" class="img-fluid" alt="Gráfica generada">
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

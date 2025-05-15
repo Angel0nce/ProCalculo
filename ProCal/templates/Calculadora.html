@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}Calculadora Científica{% endblock %}
+
+{% block body %}
+<div class="container mt-5">
+    <h2 class="text-center mb-4">Calculadora Científica</h2>
+    <div class="card p-4 mx-auto shadow" style="max-width: 400px;">
+        <form method="post">
+            <input type="text" name="expression" value="{{ expression or '' }}" class="form-control mb-3 text-end fs-4" readonly>
+
+            {% if result is defined %}
+                <div class="alert alert-info text-center">Resultado: {{ result }}</div>
+            {% elif error %}
+                <div class="alert alert-danger text-center">Error: {{ error }}</div>
+            {% endif %}
+
+            <div class="d-grid gap-2 mb-2">
+                <button name="btn" value="DEG" class="btn btn-secondary">Modo: {{ mode }}</button>
+            </div>
+
+            <div class="row g-2">
+                {% set buttons = [
+                    ['AC', '(', ')', '⌫'],
+                    ['sin(', 'cos(', 'tan(', '√('],
+                    ['asin(', 'acos(', 'atan(', 'log('],
+                    ['ln(', 'exp(', 'fact(', '/'],
+                    ['7', '8', '9', '*'],
+                    ['4', '5', '6', '-'],
+                    ['1', '2', '3', '+'],
+                    ['0', '.', '^', '=']
+                ] %}
+
+                {% for row in buttons %}
+                    {% for btn in row %}
+                        <div class="col-3">
+                            <button type="submit" name="btn" value="{{ btn }}" class="btn
+                                {% if btn in ['AC', '(', ')', '⌫'] %}btn-dark
+                                {% elif btn in ['+', '-', '*', '/', '^'] %}btn-warning
+                                {% elif btn == '=' %}btn-success
+                                {% elif btn in ['sin(', 'cos(', 'tan(', '√(', 'asin(', 'acos(', 'atan(', 'log(', 'ln(', 'exp(', 'fact('] %}btn-secondary
+                                {% else %}btn-light{% endif %}
+                                w-100">
+                                {{ '÷' if btn == '/' else '×' if btn == '*' else '−' if btn == '-' else btn }}
+                            </button>
+                        </div>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
